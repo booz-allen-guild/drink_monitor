@@ -1,8 +1,6 @@
-import pandas as pd
 from datetime import datetime
 import random
 import time
-import pymysql
 import pickle
 from sqlalchemy import create_engine
 import pandas as pd
