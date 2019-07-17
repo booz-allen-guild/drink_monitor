@@ -37,12 +37,9 @@ hour = now.hour
 
 totalTime = (hour * 3600) + (minute * 60) + (sec)
 
-# TODO
-### Reduce to one graph, with all keg values as lines
-### Fix times
-
-### Resize first graph to make room for bar graph on side
-### Add second graph, bars, showing dispensed quantities
+# TODO ### Get bar graph working...
+# TODO ### Shrink Jumbotron or change to normal header
+# TODO ### Add Prediction Panel
 
 start_time = time.time()
 
@@ -186,41 +183,6 @@ def update_graphs(n_intervals):
     )
     return fig, fig2
 
-# @app.callback(
-#     dash.dependencies.Output('bar-graph', 'children'),
-#     [  # dash.dependencies.Input('vehicle-data-name', 'value'),
-#         dash.dependencies.Input('graph-update', 'n_intervals')]
-# )
-# def update_bar_graph(n_intervals):
-#     update_keg_values(times, keg_1, keg_2, keg_3, keg_4)
-#
-#     fig2 = html.Div(
-#         dcc.Graph(
-#             id='keg-bars',#data_name,
-#             animate=True,
-#             figure={'data': [
-#                             {
-#                                 'x': [keg_1_name, keg_2_name, keg_3_name, keg_4_name],
-#                             'y': [keg_1, keg_2, keg_3, keg_4],
-#                             'type': 'bar'
-#                             }
-#                             ],
-#                     'layout' : go.Layout(
-#                         xaxis=dict(
-#                             #range=[min(times),max(times)],
-#                             title='Quantities Dispensed'
-#                         ), #max(times)
-#                         yaxis=dict(
-#                             range=[0,60],#range=[min(data_dict[data_name])-10,131],
-#                             title='Weight Dispensed (lbs)'),
-#                         margin={'l': 75,'r':75,'t':45,'b':45}, #margins for top and left for text
-#                         title='{}'.format('Beer Dispensed to Guests (lbs)'),
-#                                 )
-#                 }
-#         )#, className='eight col')
-#     )
-#     return fig2
-#
 
 external_css = ["https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"]
 for css in external_css:
