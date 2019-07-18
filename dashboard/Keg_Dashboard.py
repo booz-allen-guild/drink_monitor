@@ -6,6 +6,7 @@ import dash
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
+import plotly.express as px
 import plotly.graph_objs as go
 
 app = dash.Dash('Venture Cafe Beverage Forecasting')
@@ -37,9 +38,10 @@ hour = now.hour
 
 totalTime = (hour * 3600) + (minute * 60) + (sec)
 
-# TODO ### Get bar graph working...
+
 # TODO ### Shrink Jumbotron or change to normal header
 # TODO ### Add Prediction Panel
+# TODO ### Make colors match for all graphs
 
 start_time = time.time()
 
@@ -78,15 +80,26 @@ times, keg_1, keg_2, keg_3, keg_4 = update_keg_values(times, keg_1, keg_2, keg_3
 app.layout = html.Div(
     [
         # header
-        dbc.Jumbotron(
-            [
-                html.H1("Live Beverage Forecasting", className="display-1 text-center"
-                        ),
-                html.H4(
-                    "Tracking and prediction of beverage longevity in the midst of intensive innovation and networking.", className='text-center'
+
+        html.Div(
+            #dbc.Container(
+                html.Div(#style={'background-image':'/assets/taps.jpg'},
+                         children=
+                [
+                    html.H1("Live Beverage Forecasting", className="display-1 text-center"
+                            ),
+                    html.H4(
+                        "Tracking and prediction of beverage longevity in the midst of intensive innovation and networking.", className='text-center'
+                    ),
+                ],className='jumbotron',style={'background-image':"url('/assets/taps_transparent.jpg')",
+                                                'background-size':'cover',
+                                                'background-position': 'center top',
+                                                 },
+                #fluid=True,
                 ),
-            ],
+            #),
         ),
+
 
         # body
         html.Div(
@@ -108,23 +121,42 @@ app.layout = html.Div(
                         width=3,
 
                     ),
-                ]
+                ],
             ),
+            # predictive frame
+            dbc.Row(
+                [
+                    #dcc.Graph(),
+                    dbc.Col(
+                        html.Div(id='pred-graph'#,children=[]
+                        ),
+                        width=8,
+                    ),
+
+                ],
+            ),
+
             dcc.Interval(
                 id='graph-update',
                 interval=10000,
                 n_intervals=10000       ### Added to get around events
             )
 
-            ]
+        ]
         )
     ]
 )
 
 @app.callback(
-    [dash.dependencies.Output('graphs','children'),
-    dash.dependencies.Output('bar-graph', 'children')],
-    [dash.dependencies.Input('graph-update', 'n_intervals')])
+    [
+        dash.dependencies.Output('graphs','children'),
+        dash.dependencies.Output('bar-graph', 'children'),
+        dash.dependencies.Output('pred-graph', 'children')
+    ],
+    [
+        dash.dependencies.Input('graph-update', 'n_intervals')
+    ]
+)
 
 def update_graphs(n_intervals):
 
@@ -140,7 +172,20 @@ def update_graphs(n_intervals):
                             #data_dict#[data]
                             {'x':times,'y':list(v),'type': 'line', 'name':k} for k, v in data_dict.items() #removed x:times
                             ],
+
                     'layout' : go.Layout(
+                        legend=dict(
+                            orientation='v',
+                            #yanchor='top',
+                            #xanchor='right',
+                            y=.01,
+                            x=0,
+                            font=dict(
+                                family="sans-serif",
+                                size=16,
+                                color="black"
+                            )
+                        ),
                         xaxis=dict(
                             range=[min(times),max(times)+10],
                             title='Time Elapsed (sec)'
@@ -150,6 +195,8 @@ def update_graphs(n_intervals):
                             title='Weight of Remaining Beverage (lbs)'),
                         margin={'l': 75,'r':75,'t':45,'b':45}, #margins for top and left for text
                         title='{}'.format('Keg quantities remaining (actual)'),
+
+                        height=700
                                 )
                 }
         )#, className='eight col')
@@ -158,14 +205,11 @@ def update_graphs(n_intervals):
     fig2 = html.Div(
         dcc.Graph(
             id='keg-bars',  # data_name,
-            animate=True,
+            #animate=True,
             figure={'data': [
-
-                    data_dict
-                    # 'x': [keg_1_name, keg_2_name, keg_3_name, keg_4_name],
-                    # 'y': [keg_1, keg_2, keg_3, keg_4],
-                    # 'type': 'bar'
-
+                {'x': [keg_1_name, keg_2_name, keg_3_name, keg_4_name],
+                     'y': [60-keg_1[-1], 60-keg_2[-1], 60-keg_3[-1], 60-keg_4[-1]],
+                     'type': 'bar'}
             ],
                 'layout': go.Layout(
                     xaxis=dict(
@@ -175,13 +219,42 @@ def update_graphs(n_intervals):
                     yaxis=dict(
                         range=[0, 60],  # range=[min(data_dict[data_name])-10,131],
                         title='Weight Dispensed (lbs)'),
-                    margin={'l': 75, 'r': 75, 't': 45, 'b': 45},  # margins for top and left for text
+                    margin={'l': 75, 'r': 75, 't': 45, 'b': 85},  # margins for top and left for text
                     title='{}'.format('Beer Dispensed to Guests (lbs)'),
+                    height=400,
                 )
             }
         )  # , className='eight col')
     )
-    return fig, fig2
+
+    # UPDATE PREDICTIONS GRAPH
+    fig3 = html.Div(
+        dcc.Graph(px.scatter
+            # id='pred-lines',  # data_name,
+            # # animate=True,
+            # figure={'data': [
+            #
+            #     {'x': [keg_1_name, keg_2_name, keg_3_name, keg_4_name],
+            #      'y': [60 - keg_1[-1], 60 - keg_2[-1], 60 - keg_3[-1], 60 - keg_4[-1]],
+            #      'type': 'line'}
+            #
+            # ],
+            #     'layout': go.Layout(
+            #         xaxis=dict(
+            #             # range=[min(times),max(times)],
+            #             title='Quantities Dispensed'
+            #         ),  # max(times)
+            #         yaxis=dict(
+            #             range=[0, 60],  # range=[min(data_dict[data_name])-10,131],
+            #             title='Weight Dispensed (lbs)'),
+            #         margin={'l': 75, 'r': 75, 't': 45, 'b': 85},  # margins for top and left for text
+            #         title='{}'.format('Beer Dispensed to Guests (lbs)'),
+            #         height=400,
+            #     )
+            # }
+        )  # , className='eight col')
+    )
+    return fig, fig2, fig3
 
 
 external_css = ["https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"]
